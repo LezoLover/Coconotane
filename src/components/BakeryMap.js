@@ -10,10 +10,10 @@ const BakeryMap = () => {
         const map = new window.google.maps.Map(mapRef.current, {
           center: { lat: 34.9365234375, lng: 135.72793579101562 },
           zoom: 15,
-          mapId: "DEMO_MAP_ID", // Opcional, reemplázalo si tienes un Map ID personalizado
-          zoomControl: true, // Habilitar controles de zoom
-          fullscreenControl: true, // Botón de pantalla completa
-          streetViewControl: true, // Habilitar Street View
+          mapId: "DEMO_MAP_ID",
+          zoomControl: true,
+          fullscreenControl: false,
+          streetViewControl: true,
         });
 
         new window.google.maps.marker.AdvancedMarkerElement({
@@ -29,8 +29,7 @@ const BakeryMap = () => {
     if (!existingScript) {
       const script = document.createElement("script");
       script.id = "google-maps-script";
-      script.src =
-        "https://maps.googleapis.com/maps/api/js?key=AIzaSyDh9vuOnC4I4vmXu6g2EmOU8vCpoUuljTs&libraries=maps,marker&v=beta";
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=maps,marker&v=beta`;
       script.async = true;
       script.onload = loadGoogleMaps;
       document.body.appendChild(script);
@@ -42,7 +41,7 @@ const BakeryMap = () => {
   return (
     <div className="flex flex-col items-center mt-8 space-y-4 w-full px-4">
       {/* Texto explicativo arriba del mapa */}
-      <h2 className="text-2xl font-bold text-black text-center">
+      <h2 className="text-2xl font-bold text-gray-700 text-center">
         Encuéntranos aquí:
       </h2>
 

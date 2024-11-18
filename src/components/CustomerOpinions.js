@@ -1,101 +1,83 @@
 "use client";
-import { useState, useEffect } from "react";
-import { FaChevronLeft, FaChevronRight, FaStar, FaRegStar } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { db } from "../utils/firebaseConfig";
+import { collection, getDocs } from "firebase/firestore";
 
 export default function CustomerOpinions() {
-  const [opinions, setOpinions] = useState([]);
+  const [comments, setComments] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
+  // Obtener datos desde Firestore
   useEffect(() => {
-    async function fetchOpinions() {
-      try {
-        const response = await fetch("/api/comment"); // Llamada al endpoint de la API
-        if (!response.ok) {
-          throw new Error("Error al obtener las opiniones");
-        }
-        const data = await response.json();
-        setOpinions(data.products); // Almacenar los comentarios en el estado
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchOpinions();
+    const fetchComments = async () => {
+      const commentsCollection = collection(db, "/Comentarios");
+      const commentSnapshot = await getDocs(commentsCollection);
+      const commentList = commentSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setComments(commentList);
+    };
+
+    fetchComments();
   }, []);
 
-  const nextOpinion = () => {
-    setCurrentIndex((prevIndex) => {
-      return prevIndex === opinions.length - 1 ? 0 : prevIndex + 1; // Ir al siguiente comentario
-    });
+  // Cambiar comentario mostrado
+  const nextComment = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % comments.length);
   };
 
-  const prevOpinion = () => {
-    setCurrentIndex((prevIndex) => {
-      return prevIndex === 0 ? opinions.length - 1 : prevIndex - 1; // Ir al comentario anterior
-    });
+  const prevComment = () => {
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + comments.length) % comments.length
+    );
   };
 
-  // Componente para mostrar estrellas según el rate
-  const renderStars = (rate) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        i <= rate ? (
-          <FaStar key={i} className="text-yellow-400" /> // Estrella llena
-        ) : (
-          <FaRegStar key={i} className="text-gray-400" /> // Estrella vacía
-        )
-      );
-    }
-    return stars;
-  };
-
-  if (loading) {
-    return <p>Cargando opiniones...</p>;
+  if (comments.length === 0) {
+    return <p className="text-center text-gray-700">Cargando comentarios...</p>;
   }
 
-  if (error) {
-    return <p>Error: {error}</p>;
-  }
+  const currentComment = comments[currentIndex];
 
   return (
-    <div className="mt-8">
-      <h2 className="flex justify-center text-2xl text-black text-center font-bold mb-4">
-        Opiniones de nuestros clientes
-      </h2>
+    <section className="text-center py-8">
+      <h2 className="text-2xl text-gray-700 font-bold mb-4">Opiniones de nuestros clientes</h2>
+      <div className="relative flex flex-col items-center justify-center">
+        {/* Contenedor del comentario */}
+        <div className="w-3/4 md:w-1/2 p-4 bg-white border rounded-lg shadow-lg">
+          <h3 className="text-lg text-gray-700 font-bold">{currentComment.nombre} {currentComment.apellido}</h3>
+          <p className="text-gray-700 mt-2">{currentComment.comentario}</p>
+          {/* Mostrar estrellas según el rate */}
+          <div className="flex justify-center mt-2">
+            {Array(currentComment.rate)
+              .fill()
+              .map((_, i) => (
+                <span key={i} className="text-yellow-500 text-xl">★</span>
+              ))}
+            {Array(5 - currentComment.rate)
+              .fill()
+              .map((_, i) => (
+                <span key={i + currentComment.rate} className="text-gray-300 text-xl">★</span>
+              ))}
+          </div>
+        </div>
 
-      {/* Contenedor para las opiniones */}
-      <div className="flex items-center justify-center">
-        <div
-          className="flex-shrink-0 w-[350px] p-6 border rounded-lg shadow-md bg-white"
-          key={opinions[currentIndex].id_comentario}
-        >
-          <h3 className="text-black font-semibold mb-2">
-            {opinions[currentIndex].nombre} {opinions[currentIndex].apellido}
-          </h3>
-          <p className="text-black mb-4">{opinions[currentIndex].comentario}</p>
-          <div className="flex">{renderStars(opinions[currentIndex].rate)}</div> {/* Mostrar las estrellas */}
+        {/* Botones para cambiar de comentario */}
+        <div className="mt-4 flex justify-center gap-4">
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            onClick={prevComment}
+          >
+            Anterior
+          </button>
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            onClick={nextComment}
+          >
+            Siguiente
+          </button>
         </div>
       </div>
-
-      {/* Controles para navegar entre las opiniones usando iconos de flechas */}
-      <div className="flex justify-center mt-4 space-x-4">
-        <button
-          onClick={prevOpinion}
-          className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
-        >
-          <FaChevronLeft className="h-5 w-5" />
-        </button>
-        <button
-          onClick={nextOpinion}
-          className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
-        >
-          <FaChevronRight className="h-5 w-5" />
-        </button>
-      </div>
-    </div>
+    </section>
   );
 }
