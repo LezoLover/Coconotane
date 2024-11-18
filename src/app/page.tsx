@@ -17,7 +17,7 @@ export default function Home() {
       <Header />
 
       {/* Contenido principal */}
-      <main className="flex flex-col items-center justify-center p-8 space-y-4">
+      <main className="flex flex-col items-center justify-center p-8 space-y-5">
         {/* Sección de bienvenida o descripción */}
         <section className="text-center max-w-[900px] mb-8">
           <h1 className="text-3xl font-bold text-black mb-4">¡Enamoráte de nuestros sabores!</h1>
@@ -27,11 +27,11 @@ export default function Home() {
           </p>
         </section>
 
-        {/* Galería de productos */}
-        <ProductGallery />
-
         {/* Comentarios de los clientes */}
         <CustomerOpinions />
+
+        {/* Galería de productos */}
+        <ProductGallery />
 
         {/* Ubicación de la pastelería */}
         <BakeryMap />
