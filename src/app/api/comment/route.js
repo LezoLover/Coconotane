@@ -1,7 +1,7 @@
 // src/pages/api/product.js
 import db from '../../../utils/db';
 
-export async function GET(req, res) {
+export async function GET() {
   try {
     const [rows] = await db.query('SELECT id_comentario, nombre, apellido, comentario, rate FROM comentarios');
     return new Response(JSON.stringify({ products: rows }), { status: 200 });
