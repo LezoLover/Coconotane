@@ -17,16 +17,29 @@ const products = [
 
 export default function ProductGallery() {
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [position, setPosition] = useState(null);
+
+  const handleCardClick = (e, product) => {
+    const rect = e.target.getBoundingClientRect();
+    setPosition({
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+    });
+    setSelectedProduct(product);
+  };
 
   return (
-    <div className="flex justify-center">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-screen-lg w-full px-4">
+    <div className="flex justify-center px-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-screen-lg w-full">
         {products.map((product) => (
           <motion.div
             key={product.id}
             className="flex flex-col p-4 border rounded-lg shadow-lg bg-white cursor-pointer"
             whileHover={{ scale: 1.05 }}
-            onClick={() => setSelectedProduct(product)}
+            whileTap={{ scale: 0.95 }}
+            onClick={(e) => handleCardClick(e, product)}
           >
             {/* Imagen */}
             <img
@@ -36,34 +49,63 @@ export default function ProductGallery() {
             />
 
             {/* Contenido del card */}
-            <div className="mt-2">
+            <div className="mt-2 text-center">
               <h3 className="text-lg text-black font-bold">{product.name}</h3>
-              <p className="text-gray-700 text-sm mt-1">{product.description}</p>
             </div>
           </motion.div>
         ))}
       </div>
 
       {/* Modal para detalles */}
-      {selectedProduct && (
+      {selectedProduct && position && (
         <motion.div
-          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-4 md:px-20"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
         >
           <motion.div
-            className="bg-white p-6 rounded-lg shadow-lg max-w-lg"
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
+            className="bg-white p-6 rounded-lg shadow-lg max-w-[900px] w-full"
+            initial={{
+              scale: 0.8,
+              x: position.left,
+              y: position.top,
+              width: position.width,
+              height: position.height,
+            }}
+            animate={{
+              scale: 1,
+              x: 0,
+              y: 0,
+              width: "100%",
+              height: "auto",
+            }}
+            transition={{
+              type: "tween",
+              duration: 0.5,
+              ease: "easeOut",
+            }}
           >
-            <h3 className="text-xl text-black font-bold">{selectedProduct.name}</h3>
-            <p className="text-black mt-2">{selectedProduct.description}</p>
-            <button
-              className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
-              onClick={() => setSelectedProduct(null)}
-            >
-              Cerrar
-            </button>
+            {/* Imagen del producto en grande */}
+            <img
+              src={selectedProduct.image}
+              alt={selectedProduct.name}
+              className="w-full h-72 object-cover rounded-md"
+            />
+
+            {/* Nombre y descripción del producto en grande */}
+            <h3 className="text-2xl text-black font-bold mt-4 text-center">{selectedProduct.name}</h3> {/* Centramos el texto */}
+            <p className="text-black mt-2 text-lg px-4 text-center">{selectedProduct.description}</p> {/* Centramos el texto y le agregamos padding horizontal */}
+
+            {/* Botón para cerrar el modal */}
+            <div className="flex justify-center mt-6">
+              <button
+                className="bg-red-500 text-white px-6 py-2 rounded"
+                onClick={() => setSelectedProduct(null)}
+              >
+                Cerrar
+              </button>
+            </div>
           </motion.div>
         </motion.div>
       )}
