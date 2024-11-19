@@ -29,7 +29,8 @@ export default function Contacto() {
     setIsSubmitting(true);
 
     try {
-      const _docRef = await addDoc(collection(db, "/Mensajes"), {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const docRef = await addDoc(collection(db, "/Mensajes"), {
         ...formData,
         timestamp: new Date(), // Puedes agregar un timestamp para saber cuándo se envió
       });
