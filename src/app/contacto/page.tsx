@@ -1,7 +1,48 @@
+"use client";
+import { FormEvent, ChangeEvent, useState } from "react";
+import { db } from "../../utils/firebaseConfig"; // Importa la configuración de Firebase
+import { collection, addDoc } from "firebase/firestore";
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 
 export default function Contacto() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState("");
+
+  // Manejar cambios en el formulario
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  // Enviar el formulario a Firebase
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // Evitar que la página se recargue al enviar el formulario
+    setIsSubmitting(true);
+
+    try {
+      const docRef = await addDoc(collection(db, "/Mensajes"), {
+        ...formData,
+        timestamp: new Date(), // Puedes agregar un timestamp para saber cuándo se envió
+      });
+      setSubmissionStatus("¡Mensaje enviado correctamente!");
+      setFormData({ name: "", email: "", message: "" }); // Limpiar el formulario
+    } catch (error) {
+      setSubmissionStatus("Hubo un error al enviar el mensaje. Intenta nuevamente.");
+      console.error("Error al enviar el mensaje:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-between" style={{ backgroundColor: '#fffadf' }}>
       <Header />
@@ -18,7 +59,7 @@ export default function Contacto() {
 
         {/* Formulario de contacto */}
         <section className="w-full max-w-lg bg-white shadow-md rounded p-6">
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label htmlFor="name" className="block text-gray-700 font-bold mb-2">Nombre</label>
               <input
@@ -28,6 +69,8 @@ export default function Contacto() {
                 placeholder="Tu nombre"
                 className="w-full px-3 py-2 text-gray-700 border rounded"
                 required
+                value={formData.name}
+                onChange={handleInputChange}
               />
             </div>
 
@@ -40,6 +83,8 @@ export default function Contacto() {
                 placeholder="tu@email.com"
                 className="w-full px-3 py-2 text-gray-700 border rounded"
                 required
+                value={formData.email}
+                onChange={handleInputChange}
               />
             </div>
 
@@ -52,15 +97,25 @@ export default function Contacto() {
                 className="w-full px-3 py-2 text-gray-700 border rounded"
                 rows={4}
                 required
+                value={formData.message}
+                onChange={handleInputChange}
               ></textarea>
             </div>
+
+            {/* Mostrar mensaje de estado de envío */}
+            {submissionStatus && (
+              <div className="mb-4 text-center text-gray-700">
+                <p>{submissionStatus}</p>
+              </div>
+            )}
 
             <div className="text-center">
               <button
                 type="submit"
-                className="bg-[#495057] text-white px-4 py-2 rounded hover:bg-gray-700"
+                className={`bg-[#495057] text-white px-4 py-2 rounded hover:bg-gray-700 ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                disabled={isSubmitting}
               >
-                Enviar
+                {isSubmitting ? "Enviando..." : "Enviar"}
               </button>
             </div>
           </form>
@@ -69,7 +124,6 @@ export default function Contacto() {
 
       {/* Footer */}
       <Footer />
-      
     </div>
   );
 }
